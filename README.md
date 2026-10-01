@@ -1,199 +1,203 @@
-# 🧠 Real-Time Face Detection using Hybrid CNN
-## ResNet50 + DenseNet121 Deep Learning Architecture
+# Real-Time Real vs. Fake Face Detection with Hybrid CNN
+### ResNet50 + DenseNet121 | Deep Learning | Computer Vision | TensorFlow | OpenCV
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.x-blue?logo=python">
-  <img src="https://img.shields.io/badge/TensorFlow-Deep%20Learning-orange?logo=tensorflow">
-  <img src="https://img.shields.io/badge/OpenCV-Computer%20Vision-green?logo=opencv">
-  <img src="https://img.shields.io/badge/Model-ResNet50%20%2B%20DenseNet121-purple">
-  <img src="https://img.shields.io/badge/Task-Real%20vs%20Fake-red">
+  <img src="https://img.shields.io/badge/Python-3.x-3776AB?logo=python&logoColor=white">
+  <img src="https://img.shields.io/badge/TensorFlow-Deep%20Learning-FF6F00?logo=tensorflow&logoColor=white">
+  <img src="https://img.shields.io/badge/OpenCV-Computer%20Vision-5C3EE8?logo=opencv&logoColor=white">
+  <img src="https://img.shields.io/badge/ResNet50-Feature%20Extractor-blue">
+  <img src="https://img.shields.io/badge/DenseNet121-Feature%20Extractor-green">
+  <img src="https://img.shields.io/badge/Test%20Accuracy-96.94%25-brightgreen">
 </p>
 
-A deep-learning-based computer vision system for **face detection and Real/Fake face classification** using a hybrid CNN architecture combining **ResNet50** and **DenseNet121**.
+---
 
-The system integrates transfer learning, deep feature extraction, feature fusion, face localization, and classification into a complete computer vision pipeline.
+## Overview
 
-The model was trained and evaluated on a large-scale dataset containing **140,000 facial images** and achieved approximately **96.94% test accuracy**.
+This project implements an end-to-end computer vision system for **face localization and Real vs. Fake face classification** using a custom **Hybrid Convolutional Neural Network** built on top of **ResNet50 and DenseNet121**.
+
+Rather than relying on a single CNN backbone, the system extracts complementary deep visual representations from two ImageNet-pretrained networks and combines them through **feature-level fusion** before classification.
+
+The complete pipeline covers:
+
+- Face localization
+- Face ROI extraction
+- Image preprocessing
+- Transfer learning
+- Dual-backbone feature extraction
+- Deep feature fusion
+- Binary classification
+- Confidence-based prediction
+- Model evaluation
+- Model persistence
+
+The model was trained and evaluated using a large-scale dataset containing **140,000 Real and Fake facial images**, reaching approximately **96.94% accuracy on 20,000 unseen test images**.
 
 ---
 
-# 📌 Project Overview
+## Key Results
 
-Distinguishing real facial images from artificially generated or manipulated faces is a challenging computer vision problem.
+| Metric | Result |
+|---|---:|
+| Total Dataset | **140,000 images** |
+| Training Set | **100,000 images** |
+| Validation Set | **20,000 images** |
+| Test Set | **20,000 images** |
+| Number of Classes | **2 — Real / Fake** |
+| Input Resolution | **256 × 256 × 3** |
+| Training Accuracy | **~97.56%** |
+| Validation Accuracy | **~97.07%** |
+| Test Accuracy | **~96.94%** |
+| Validation Loss | **~0.0786** |
+| Test Loss | **~0.0797** |
+| CNN Backbones | **ResNet50 + DenseNet121** |
 
-Traditional single-backbone CNN architectures may capture only a limited representation of complex facial patterns.
+---
 
-This project introduces a **Hybrid CNN Architecture** that combines two powerful pretrained convolutional neural networks:
+## Problem Statement
 
-- **ResNet50**
-- **DenseNet121**
+Distinguishing authentic facial images from artificially generated or manipulated faces is a challenging computer vision problem.
 
-Both networks independently extract high-level visual features from the same facial image.
+Real and fake faces may share almost identical high-level characteristics, while the discriminative information can exist in subtle differences involving:
 
-Their feature representations are then combined through **feature-level fusion**, producing a richer representation before final classification.
+- Texture
+- Local facial structure
+- Edge consistency
+- Spatial patterns
+- Fine visual artifacts
+- High-level semantic representations
 
-The complete pipeline performs:
+A single CNN architecture may not capture all of these patterns equally well.
+
+This project therefore uses a **dual-backbone architecture**, allowing two different deep neural networks to independently analyze the same facial image before combining their learned representations.
+
+---
+
+## System Architecture
+
+The proposed system combines **ResNet50** and **DenseNet121** into a unified deep-learning pipeline.
 
 ```text
-Input Image
-     │
-     ▼
-Face Detection
-     │
-     ▼
-Face ROI Extraction
-     │
-     ▼
-Image Preprocessing
-     │
-     ▼
-ResNet50 + DenseNet121
-     │
-     ▼
-Deep Feature Fusion
-     │
-     ▼
-Classification
-     │
-     ▼
-REAL / FAKE
+                       Input Image
+                            │
+                            ▼
+                     Face Detection
+                            │
+                            ▼
+                    Face ROI Extraction
+                            │
+                            ▼
+                  Resize + Normalization
+                            │
+                            ▼
+                     256 × 256 × 3
+                            │
+               ┌────────────┴────────────┐
+               │                         │
+               ▼                         ▼
+           ResNet50                 DenseNet121
+        ImageNet Weights          ImageNet Weights
+               │                         │
+               ▼                         ▼
+       Deep Feature Maps         Deep Feature Maps
+               │                         │
+               └────────────┬────────────┘
+                            │
+                            ▼
+                  Feature Concatenation
+                            │
+                            ▼
+                  Global Average Pooling
+                            │
+                            ▼
+                    Dense Layer (256)
+                            │
+                            ▼
+                           ReLU
+                            │
+                            ▼
+                       Dropout 0.3
+                            │
+                            ▼
+                         Softmax
+                            │
+                   ┌────────┴────────┐
+                   │                 │
+                   ▼                 ▼
+                 REAL               FAKE
 ```
 
 ---
 
-# 🏗️ Hybrid CNN Architecture
+## Why a Hybrid CNN?
 
-The core of the system is a dual-backbone deep learning architecture.
+The central idea behind this project is that different CNN architectures learn different representations of the same image.
 
-The same facial image is processed simultaneously by **ResNet50** and **DenseNet121**.
+Instead of selecting only one backbone, the system combines the strengths of both architectures.
 
-```text
-                    Input Face
-                   256 × 256 × 3
-                         │
-              ┌──────────┴──────────┐
-              │                     │
-              ▼                     ▼
-          ResNet50              DenseNet121
-       ImageNet Weights       ImageNet Weights
-              │                     │
-              ▼                     ▼
-       Deep Features          Deep Features
-              │                     │
-              └──────────┬──────────┘
-                         │
-                         ▼
-                Feature Concatenation
-                         │
-                         ▼
-               Global Average Pooling
-                         │
-                         ▼
-                  Dense Layer
-                    256 Units
-                         │
-                         ▼
-                       ReLU
-                         │
-                         ▼
-                    Dropout
-                         │
-                         ▼
-                     Softmax
-                         │
-                  ┌──────┴──────┐
-                  ▼             ▼
-                REAL           FAKE
-```
+### ResNet50
 
-### Why ResNet50?
+ResNet50 uses **residual connections** to enable efficient training of deep neural networks.
 
-ResNet50 introduces **residual connections**, allowing deep neural networks to learn complex representations while reducing problems associated with vanishing gradients.
+Residual learning helps information and gradients propagate through many convolutional layers, enabling the network to learn rich hierarchical visual features.
 
-It provides strong hierarchical feature extraction for visual recognition tasks.
+It is particularly effective at extracting high-level structural representations from images.
 
-### Why DenseNet121?
+### DenseNet121
 
-DenseNet121 uses **dense connectivity**, where layers receive information from previous layers.
+DenseNet121 introduces **dense connectivity**, where layers receive feature information from preceding layers.
 
 This encourages:
 
 - Feature reuse
-- Efficient gradient propagation
-- Preservation of low-level information
-- Strong visual representation learning
+- Efficient information propagation
+- Strong gradient flow
+- Preservation of lower-level visual information
 
-### Why Combine Them?
+### Feature Fusion
 
-Instead of depending on a single CNN backbone, the hybrid model learns complementary representations from both architectures.
+The representations generated by both networks are combined rather than making independent final predictions.
 
-ResNet50 contributes strong residual representations, while DenseNet121 provides densely connected feature propagation.
-
-The resulting features are fused before classification.
-
----
-
-# 🔬 Feature Extraction & Fusion
-
-The hybrid approach is based on extracting deep representations from multiple CNN branches and combining them into a unified feature space.
-
-<p align="center">
-  <img src="images/hybrid_architecture.png" width="900">
-</p>
-
-<p align="center">
-  <em>Illustration of a multi-backbone feature extraction and feature-fusion architecture.</em>
-</p>
-
-> **Note:** The figure above illustrates the general concept of multi-backbone feature extraction. The architecture implemented in this repository specifically uses **ResNet50 + DenseNet121**.
-
-The implemented feature pipeline can be summarized as:
+Conceptually:
 
 ```text
-ResNet50 Features
-       │
-       ├──────────────┐
-       │              │
-       │        Feature Fusion
-       │              │
-DenseNet121 Features ─┘
-                      │
-                      ▼
-              Combined Feature Map
-                      │
-                      ▼
-            Global Average Pooling
-                      │
-                      ▼
-             Fully Connected Layer
-                      │
-                      ▼
-               Classification
+F_resnet = ResNet50(x)
+
+F_densenet = DenseNet121(x)
+
+F_hybrid = Concatenate(
+    F_resnet,
+    F_densenet
+)
+
+Prediction = Classifier(F_hybrid)
 ```
+
+This creates a richer joint feature representation for the final Real/Fake classification stage.
 
 ---
 
-# 📊 Dataset
+## Dataset
 
-The model was trained using a large-scale **Real and Fake Faces dataset**.
+The model was trained and evaluated on a large-scale dataset containing **140,000 facial images**.
 
-The complete dataset contains:
+### Dataset Distribution
 
-| Dataset Split | Number of Images |
+| Split | Images |
 |---|---:|
-| Training | **100,000** |
-| Validation | **20,000** |
-| Testing | **20,000** |
+| Training | 100,000 |
+| Validation | 20,000 |
+| Testing | 20,000 |
 | **Total** | **140,000** |
 
-The dataset contains two classes:
+The classification problem contains two classes:
 
 ```text
 Real
 Fake
 ```
 
-Dataset structure:
+A typical dataset organization follows:
 
 ```text
 Dataset/
@@ -213,97 +217,176 @@ Dataset/
 
 ---
 
-# ⚙️ Image Preprocessing
+## Image Preprocessing Pipeline
 
-Before entering the neural network, images are prepared for inference.
-
-The preprocessing pipeline includes:
+Before an image reaches the classifier, it passes through a preprocessing pipeline designed to produce consistent input for the neural network.
 
 ```text
-Input Image
-      │
-      ▼
+Raw Image
+    │
+    ▼
 Face Localization
-      │
-      ▼
+    │
+    ▼
+Bounding Box
+    │
+    ▼
 Face ROI Extraction
-      │
-      ▼
-Resize
-256 × 256
-      │
-      ▼
+    │
+    ▼
+Resize to 256 × 256
+    │
+    ▼
 Pixel Normalization
-      │
-      ▼
-Batch Dimension
-      │
-      ▼
+    │
+    ▼
+Tensor Preparation
+    │
+    ▼
 Hybrid CNN
 ```
 
-Images are resized to:
+The model expects RGB images with the shape:
 
-```text
-256 × 256 × 3
+```python
+(256, 256, 3)
 ```
 
-Pixel values are normalized before being passed to the neural network.
+Images are loaded in batches of:
+
+```python
+batch_size = 32
+```
+
+Pixel values are normalized before being processed by the neural network.
 
 ---
 
-# 🧠 Training Configuration
+## Transfer Learning
 
-The hybrid network was implemented using **TensorFlow/Keras**.
+Both backbone networks use pretrained **ImageNet weights**.
 
-| Parameter | Configuration |
+Instead of learning basic visual representations entirely from scratch, transfer learning allows the system to start with representations learned from a large and diverse image dataset.
+
+The pretrained networks already contain useful representations for visual characteristics such as:
+
+```text
+Edges
+  ↓
+Textures
+  ↓
+Shapes
+  ↓
+Object Parts
+  ↓
+High-Level Visual Features
+```
+
+These representations are then adapted to the Real/Fake facial classification problem.
+
+---
+
+## Feature-Level Fusion
+
+The most important architectural component is the fusion of the two CNN branches.
+
+For every input image:
+
+```text
+                    Input
+                      │
+            ┌─────────┴─────────┐
+            │                   │
+            ▼                   ▼
+         ResNet50           DenseNet121
+            │                   │
+            ▼                   ▼
+      Feature Tensor       Feature Tensor
+            │                   │
+            └─────────┬─────────┘
+                      │
+                      ▼
+                  Concatenate
+                      │
+                      ▼
+              Hybrid Representation
+                      │
+                      ▼
+             Global Average Pooling
+                      │
+                      ▼
+                  Classifier
+```
+
+This approach allows the final classifier to operate on information learned by **both CNN families** instead of relying on a single representation.
+
+---
+
+## Classification Head
+
+After feature fusion, the combined representation passes through the classification stage.
+
+The classification head contains:
+
+```text
+Feature Concatenation
+        │
+        ▼
+Global Average Pooling
+        │
+        ▼
+Dense — 256 Units
+        │
+        ▼
+       ReLU
+        │
+        ▼
+   Dropout — 0.3
+        │
+        ▼
+      Softmax
+        │
+        ▼
+   Real / Fake
+```
+
+Global Average Pooling reduces spatial feature maps into a compact representation before classification.
+
+Dropout is applied to reduce overfitting and improve generalization.
+
+---
+
+## Training Configuration
+
+The model was implemented using **TensorFlow/Keras**.
+
+| Configuration | Value |
 |---|---|
+| Architecture | Hybrid CNN |
 | Backbone 1 | ResNet50 |
 | Backbone 2 | DenseNet121 |
 | Pretrained Weights | ImageNet |
-| Input Resolution | 256 × 256 × 3 |
+| Input Shape | 256 × 256 × 3 |
 | Batch Size | 32 |
 | Optimizer | Adam |
 | Initial Learning Rate | 0.001 |
-| Loss | Sparse Categorical Crossentropy |
+| Loss Function | Sparse Categorical Crossentropy |
 | Output Classes | 2 |
-| Classification | Real / Fake |
+| Hidden Dense Layer | 256 |
+| Dropout | 0.3 |
+| Evaluation Metric | Accuracy |
 
 ---
 
-# 🎯 Transfer Learning
+## Training Strategy
 
-Both CNN backbones use pretrained **ImageNet weights**.
+Training deep neural networks effectively requires more than simply selecting an optimizer.
 
-Transfer learning allows the system to start from visual representations learned from millions of images rather than training every convolutional feature from scratch.
+The training pipeline includes mechanisms for controlling convergence and reducing overfitting.
 
-This provides useful representations for:
+### ReduceLROnPlateau
 
-- Edges
-- Shapes
-- Textures
-- Facial structures
-- High-level visual patterns
-
-These representations are then adapted to the Real/Fake classification task.
-
----
-
-# 🛡️ Regularization
-
-Dropout is incorporated into the network to reduce overfitting and improve generalization.
-
-```python
-Dropout(0.3)
-```
-
-Regularization becomes particularly important when combining large pretrained CNN architectures.
-
----
-
-# 📉 Adaptive Learning Rate
-
-The training pipeline uses **ReduceLROnPlateau**.
+The learning rate is automatically reduced when validation performance stops improving.
 
 ```python
 ReduceLROnPlateau(
@@ -312,15 +395,11 @@ ReduceLROnPlateau(
 )
 ```
 
-When validation performance stops improving, the learning rate is automatically reduced.
+This allows the optimizer to make progressively smaller parameter updates as training approaches convergence.
 
-This allows the optimizer to perform smaller parameter updates during later stages of training.
+### Early Stopping
 
----
-
-# ⏹️ Early Stopping
-
-Early stopping is used to prevent unnecessary training after validation performance stops improving.
+Early stopping prevents the network from continuing to train when validation loss no longer improves.
 
 ```python
 EarlyStopping(
@@ -330,78 +409,46 @@ EarlyStopping(
 )
 ```
 
-The best-performing model weights are automatically restored.
+The best-performing weights are automatically restored.
 
 ---
 
-# 📈 Model Performance
+## Model Performance
 
-The hybrid architecture achieved strong performance on both validation and unseen test data.
+The hybrid architecture demonstrated strong performance across training, validation, and unseen test data.
 
-| Metric | Result |
-|---|---:|
-| Training Accuracy | **~97.56%** |
-| Validation Accuracy | **~97.07%** |
-| Test Accuracy | **~96.94%** |
-| Validation Loss | **~0.0786** |
-| Test Loss | **~0.0797** |
+### Training Performance
 
-### Test Set
+```text
+Training Accuracy   ≈ 97.56%
+Validation Accuracy ≈ 97.07%
+Validation Loss     ≈ 0.0786
+```
+
+### Final Test Evaluation
 
 The final model was evaluated on:
 
 ```text
-20,000 unseen images
+20,000 unseen facial images
 ```
 
-Final evaluation:
+and achieved:
 
 ```text
 Test Accuracy ≈ 96.94%
 Test Loss     ≈ 0.0797
 ```
 
-The small difference between validation and test performance suggests strong generalization to unseen samples.
+The validation and test results remain close, indicating that the learned representation generalized well to unseen samples rather than showing a large validation-to-test performance drop.
 
 ---
 
-# 📊 Confusion Matrix Analysis
+## OpenCV Face Localization
 
-Confusion matrices provide a deeper view of classification performance than accuracy alone.
+The classification network is combined with **OpenCV** to create an end-to-end facial analysis pipeline.
 
-They show the relationship between:
-
-- True Positives
-- True Negatives
-- False Positives
-- False Negatives
-
-and help identify systematic classification errors.
-
-<p align="center">
-  <img src="images/confusion_matrix.png" width="850">
-</p>
-
-<p align="center">
-  <em>Example confusion-matrix visualization for evaluating classification performance.</em>
-</p>
-
-> **Important:** The figure above is included as a reference visualization. It should not be interpreted as the Real/Fake confusion matrix produced by this repository unless it was generated directly from this project's predictions.
-
-For this project, the final test evaluation reached approximately:
-
-```text
-Accuracy = 96.94%
-Loss     = 0.0797
-```
-
----
-
-# 👁️ Face Detection Pipeline
-
-The deep-learning classifier is integrated with **OpenCV** for face localization.
-
-OpenCV's Haar Cascade classifier is used to identify facial regions.
+Face localization is performed using OpenCV's Haar Cascade detector:
 
 ```python
 face_cascade = cv2.CascadeClassifier(
@@ -410,94 +457,111 @@ face_cascade = cv2.CascadeClassifier(
 )
 ```
 
-The inference workflow is:
+The detector identifies facial bounding boxes before classification.
+
+This separates the system into two stages:
+
+```text
+Stage 1
+Face Localization
+      │
+      ▼
+Stage 2
+Deep Learning Classification
+```
+
+---
+
+## End-to-End Inference Pipeline
+
+During inference, the system performs the following sequence:
 
 ```text
 Input Image
-     │
-     ▼
-OpenCV Face Detector
-     │
-     ▼
-Bounding Box
-     │
-     ▼
-Face ROI
-     │
-     ▼
+      │
+      ▼
+Detect Face
+      │
+      ▼
+Extract Face ROI
+      │
+      ▼
 Resize to 256 × 256
-     │
-     ▼
-Normalize
-     │
-     ▼
-Hybrid CNN
-     │
-     ▼
+      │
+      ▼
+Normalize Pixels
+      │
+      ▼
+Prepare Input Tensor
+      │
+      ▼
+ResNet50 ────┐
+             ├── Feature Fusion
+DenseNet121 ─┘
+      │
+      ▼
+Classification Head
+      │
+      ▼
 Class Probabilities
-     │
-     ▼
+      │
+      ▼
 Real / Fake Prediction
+      │
+      ▼
+Display Bounding Box + Result
 ```
+
+For each detected face, the system:
+
+1. Detects the facial region.
+2. Extracts the face ROI.
+3. Resizes the ROI to the model input dimensions.
+4. Normalizes the image.
+5. Converts the image into the required tensor format.
+6. Performs hybrid CNN inference.
+7. Generates probabilities for both classes.
+8. Selects the predicted class.
+9. Displays the classification result.
 
 ---
 
-# 🔍 Inference Pipeline
+## Prediction Output
 
-For every detected face, the system performs the following operations:
+The network generates probabilities for the two output classes.
 
-1. Detect the face using OpenCV.
-2. Generate the facial bounding box.
-3. Extract the facial Region of Interest.
-4. Resize the ROI to `256 × 256`.
-5. Normalize the image.
-6. Convert it into the required tensor format.
-7. Pass it through the hybrid CNN.
-8. Generate probabilities for Real and Fake classes.
-9. Select the predicted class.
-10. Display the classification result.
-
----
-
-# 🧪 Prediction
-
-The model outputs probabilities for two classes:
-
-```text
-Class 0 → Fake
-Class 1 → Real
-```
-
-Example prediction:
+An example output can be represented as:
 
 ```text
 Fake Probability: 0.9861
 Real Probability: 0.0139
 
-Prediction → FAKE
+Final Prediction: FAKE
 ```
 
-Another example:
+or:
 
 ```text
 Fake Probability: 0.0260
 Real Probability: 0.9740
 
-Prediction → REAL
+Final Prediction: REAL
 ```
+
+The final prediction is derived from the model's output probabilities.
 
 ---
 
-# 💾 Model Persistence
+## Model Persistence
 
-The trained architecture and learned weights can be stored separately.
+The trained architecture and learned weights can be saved separately.
 
 ```text
 AAOHybrid_model.json
 AAOHybrid_final.weights.h5
 ```
 
-The model architecture can then be reconstructed:
+The architecture can later be reconstructed and the trained weights restored without retraining the complete network.
 
 ```python
 from tensorflow.keras.models import model_from_json
@@ -512,72 +576,68 @@ model.load_weights(
 )
 ```
 
-This allows inference without retraining the network.
+This allows the trained model to be reused for testing and inference.
 
 ---
 
-# 🛠️ Technology Stack
-
-### Programming
-
-![Python](https://img.shields.io/badge/Python-Programming-blue?logo=python)
+## Technology Stack
 
 ### Deep Learning
 
-![TensorFlow](https://img.shields.io/badge/TensorFlow-Deep_Learning-orange?logo=tensorflow)
-
-![Keras](https://img.shields.io/badge/Keras-Neural_Networks-red?logo=keras)
+- TensorFlow
+- Keras
+- ResNet50
+- DenseNet121
+- Convolutional Neural Networks
+- Transfer Learning
+- Feature Fusion
 
 ### Computer Vision
 
-![OpenCV](https://img.shields.io/badge/OpenCV-Computer_Vision-green?logo=opencv)
+- OpenCV
+- Haar Cascade
+- Face Localization
+- ROI Extraction
+- Image Processing
 
-### Core Architectures
+### Machine Learning & Data Processing
 
-```text
-ResNet50
-DenseNet121
-Hybrid CNN
-Transfer Learning
-Feature Fusion
-```
+- NumPy
+- Pandas
+- Scikit-learn
+- ImageDataGenerator
 
-### Data & Analysis
+### Visualization
 
-```text
-NumPy
-Pandas
-Scikit-learn
-Matplotlib
-```
+- Matplotlib
+
+### Programming Language
+
+- Python
 
 ---
 
-# 📁 Repository Structure
+## Repository Structure
 
 ```text
 Deep-Learning-Real-Time-Face-Detection-ResNet50-DenseNet121/
 │
 ├── FINAL_NOTEBOOK.ipynb
+│   └── Main experimentation, training and evaluation notebook
 │
 ├── testing_notebook.ipynb
+│   └── Model testing and inference experiments
 │
 ├── training.py
+│   └── Python training pipeline
 │
-├── README.md
-│
-├── images/
-│   ├── hybrid_architecture.png
-│   └── confusion_matrix.png
-│
-└── models/
-    ├── AAOHybrid_model.json
-    └── AAOHybrid_final.weights.h5
+└── README.md
+    └── Project documentation
 ```
 
 ---
 
-# 🚀 Installation
+## Installation
 
 Clone the repository:
 
@@ -585,13 +645,13 @@ Clone the repository:
 git clone https://github.com/Habeba455/Deep-Learning-Real-Time-Face-Detection-ResNet50-DenseNet121.git
 ```
 
-Navigate to the project directory:
+Navigate to the project:
 
 ```bash
 cd Deep-Learning-Real-Time-Face-Detection-ResNet50-DenseNet121
 ```
 
-Install dependencies:
+Install the main dependencies:
 
 ```bash
 pip install tensorflow keras opencv-python numpy pandas matplotlib scikit-learn tqdm
@@ -599,11 +659,11 @@ pip install tensorflow keras opencv-python numpy pandas matplotlib scikit-learn 
 
 ---
 
-# ▶️ Running the Project
+## Running the Project
 
-### Jupyter Notebook
+### Using Jupyter Notebook
 
-Launch:
+Start Jupyter:
 
 ```bash
 jupyter notebook
@@ -615,7 +675,7 @@ Then open:
 FINAL_NOTEBOOK.ipynb
 ```
 
-### Training Script
+### Using the Training Script
 
 The training pipeline can also be executed through:
 
@@ -623,77 +683,133 @@ The training pipeline can also be executed through:
 python training.py
 ```
 
-Dataset paths should be configured according to the local environment before running the training pipeline.
+Dataset paths must be configured according to the local environment before training.
 
 ---
 
-# 💡 Core Technical Contributions
+## Engineering Highlights
 
-This project demonstrates an end-to-end computer vision workflow involving:
+This repository demonstrates more than a basic image classifier.
 
-- Hybrid CNN architecture design
+It covers multiple stages of a practical computer vision workflow:
+
+```text
+Data Preparation
+      ↓
+Transfer Learning
+      ↓
+Multi-Backbone CNN
+      ↓
+Feature Extraction
+      ↓
+Feature Fusion
+      ↓
+Regularized Classification
+      ↓
+Training Optimization
+      ↓
+Model Evaluation
+      ↓
+Face Localization
+      ↓
+Inference
+      ↓
+Model Persistence
+```
+
+### Key Technical Components
+
+- Hybrid CNN architecture
+- Dual pretrained CNN backbones
 - ResNet50 feature extraction
 - DenseNet121 feature extraction
-- Transfer learning with ImageNet weights
-- Multi-backbone feature fusion
+- ImageNet transfer learning
 - Deep feature concatenation
 - Global Average Pooling
-- Fully connected classification
+- Dense classification layers
 - Dropout regularization
-- Adaptive learning-rate scheduling
+- Adaptive learning-rate reduction
 - Early stopping
 - Large-scale image training
-- Model evaluation
+- OpenCV face localization
+- Face ROI preprocessing
+- Binary Real/Fake classification
 - Model serialization
-- OpenCV face detection
-- Face ROI extraction
-- Image preprocessing
-- Real/Fake face classification
-- End-to-end inference
+- End-to-end inference workflow
 
 ---
 
-# 🔮 Future Improvements
+## What Makes This Project Different?
 
-Future development could extend the current system with:
+A standard transfer-learning project typically relies on a single pretrained CNN followed by a classification layer.
 
-- Real-time webcam streaming
-- Video-based inference
-- RetinaFace or MTCNN face detection
-- Precision and Recall evaluation
-- F1-score analysis
+This project instead explores a **multi-backbone feature-fusion strategy**:
+
+```text
+Single Backbone
+
+Image → CNN → Classifier
+
+
+Hybrid Approach
+
+          ┌→ ResNet50 ────┐
+Image ────┤               ├→ Feature Fusion → Classifier
+          └→ DenseNet121 ─┘
+```
+
+The architecture allows the classifier to learn from complementary representations generated by two established deep CNN families.
+
+Combined with face localization and preprocessing, this creates a complete pipeline from raw image input to final authenticity prediction.
+
+---
+
+## Future Improvements
+
+Potential extensions include:
+
+- Live webcam inference
+- Video-stream processing
+- MTCNN or RetinaFace for stronger face localization
+- Precision, Recall and F1-score reporting
 - ROC-AUC evaluation
-- Project-specific confusion matrix visualization
+- Project-specific confusion matrix generation
+- Model quantization
 - TensorFlow Lite deployment
 - ONNX conversion
 - GPU inference optimization
-- FastAPI inference API
+- Batch inference API
+- FastAPI deployment
 - Docker containerization
 - Cloud deployment
-- Temporal deepfake detection
+- Temporal analysis for manipulated video detection
 
 ---
 
-# ⚠️ Disclaimer
+## Disclaimer
 
-This project was developed for **educational, research, and computer vision experimentation purposes**.
+This project was developed for **research, educational, and computer vision experimentation purposes**.
 
 Deep-learning predictions should not be considered definitive forensic evidence that an image is authentic or manipulated.
 
 ---
 
-# 👩‍💻 Author
+## Author
 
-## Habeba Mohamed Fetouh
+### Habeba Mohamed Fetouh
 
 **AI / Machine Learning & Computer Vision Engineer**
 
-Focused on building practical AI systems using:
+Building practical AI systems across:
 
-`Python` • `Deep Learning` • `Computer Vision` • `TensorFlow` • `PyTorch` • `OpenCV` • `Machine Learning`
+`Computer Vision` • `Deep Learning` • `Machine Learning` • `Python` • `TensorFlow` • `PyTorch` • `OpenCV`
 
 ---
 
 <p align="center">
-  <b>⭐ If you find this project useful, consider starring the repository.</b>
+  <b>Built with Deep Learning, Computer Vision, and Feature-Level CNN Fusion.</b>
+</p>
+
+<p align="center">
+  ⭐ If you find this project useful, consider starring the repository.
 </p>
